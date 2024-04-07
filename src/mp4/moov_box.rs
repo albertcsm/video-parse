@@ -1,7 +1,7 @@
 use std::{fmt, io::{self, Read, Seek}};
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::{atom::Atom, atom_reader, four_cc::FourCC};
+use super::{atom::Atom, atom_reader};
 
 pub struct MoovBox {
     children: Vec<Box<dyn Atom>>,

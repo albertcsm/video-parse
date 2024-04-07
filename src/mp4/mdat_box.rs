@@ -1,16 +1,20 @@
 use std::{fmt, io::{self, Read, Seek}};
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::{atom::Atom, four_cc::FourCC};
+use crate::h264::{nalu::Nalu, nalu_reader};
+
+use super::atom::Atom;
 
 pub struct MdatBox {
+    nalus: Vec<Box<dyn Nalu>>,
     payload_size: u64
 }
 
 impl MdatBox {
     pub fn read(rdr: &mut (impl Read + Seek), len: u64) -> io::Result<Self> {
-        rdr.seek(io::SeekFrom::Current(i64::try_from(len).unwrap()));
+        let nalus = nalu_reader::read_nalus(rdr, len);
         Ok(MdatBox {
+            nalus,
             payload_size: len
         })
     }
@@ -24,6 +28,7 @@ impl Atom for MdatBox {
 
 impl fmt::Display for MdatBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "mdat()")
+        let nalus = self.nalus.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+        write!(f, "mdat({})", nalus)
     }
 }

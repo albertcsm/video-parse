@@ -1,7 +1,7 @@
 use std::{fmt, io::{self, Read, Seek}};
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::{atom::Atom, four_cc::FourCC};
+use super::{atom::Atom, four_cc::FourCC};
 
 pub struct UnknownBox {
     boxtype: FourCC,

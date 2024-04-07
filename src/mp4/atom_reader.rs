@@ -2,7 +2,7 @@ use std::io::{Read, Seek};
 
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::{atom::Atom, four_cc::FourCC, ftyp_box, mdat_box, moov_box, mvhd_box, unknown_box};
+use super::{atom::Atom, four_cc::FourCC, ftyp_box, mdat_box, moov_box, mvhd_box, unknown_box};
 
 pub fn read_atom(rdr: &mut (impl Read + Seek)) -> Option<Box<dyn Atom>> {
     let size_u32 = rdr.read_u32::<BigEndian>();

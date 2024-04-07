@@ -1,7 +1,7 @@
 use std::{fmt, io::{self, Read}};
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::{atom::Atom, four_cc::FourCC};
+use super::{atom::Atom, four_cc::FourCC};
 
 pub struct FtypBox {
     major_brand: FourCC,

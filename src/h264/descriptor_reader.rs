@@ -42,7 +42,23 @@ impl<'a> DescriptorReader<'a> {
         }
         value
     }
+
+    pub fn read_u1(&mut self) -> bool {
+        self.read_u(1) > 0
+    }
+
+    pub fn read_u8(&mut self) -> u8 {
+        u8::try_from(self.read_u(8)).unwrap()
+    }
     
+    pub fn read_u16(&mut self) -> u16 {
+        u16::try_from(self.read_u(16)).unwrap()
+    }
+
+    pub fn read_u32(&mut self) -> u32 {
+        u32::try_from(self.read_u(32)).unwrap()
+    }
+
     pub fn read_ue_v(&mut self) -> u64 {
         let bits = self.count_zero_bits();
         self.read_u(bits + 1) - 1

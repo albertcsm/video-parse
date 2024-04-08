@@ -7,3 +7,4 @@ pub mod non_idr_nalu;
 pub mod delim_nalu;
 pub mod unknown_nalu;
 pub mod nalu_reader;
+mod descriptor_reader;

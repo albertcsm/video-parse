@@ -4,10 +4,10 @@ use byteorder::{BigEndian, ReadBytesExt};
 use super::{atom::Atom, four_cc::FourCC};
 
 pub struct FtypBox {
-    major_brand: FourCC,
-    minor_brand: u32,
-    compatible_brands: Vec<FourCC>,
-    payload_size: u64
+    pub major_brand: FourCC,
+    pub minor_brand: u32,
+    pub compatible_brands: Vec<FourCC>,
+    pub payload_size: u64
 }
 
 impl FtypBox {

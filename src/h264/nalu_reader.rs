@@ -7,7 +7,7 @@ use super::{delim_nalu::DelimNalu, idr_nalu::IdrNalu, nalu::Nalu, non_idr_nalu::
 pub fn read_nalu(rdr: &mut (impl Read + Seek)) -> Option<Box<dyn Nalu>> {
     let size = rdr.read_u32::<BigEndian>().unwrap();
     let header = rdr.read_u8().unwrap();
-    let nal_ref_idc = (header & 0b01100000) >> 5;
+    let _nal_ref_idc = (header & 0b01100000) >> 5;
     let nal_unit_type = header & 0b00011111;
     let payload_size = size - 1;
     match nal_unit_type {

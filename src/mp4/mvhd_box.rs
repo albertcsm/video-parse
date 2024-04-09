@@ -4,20 +4,20 @@ use byteorder::{BigEndian, ReadBytesExt};
 use super::atom::Atom;
 
 pub struct MvhdBox {
-    version: u8,
-    flags: [u8; 3],
-    creation_time: u64,
-    modification_time: u64,
-    timescale: u32,
-    duration: u64,
-    payload_size: u64
+    pub version: u8,
+    pub flags: [u8; 3],
+    pub creation_time: u64,
+    pub modification_time: u64,
+    pub timescale: u32,
+    pub duration: u64,
+    pub payload_size: u64
 }
 
 impl MvhdBox {
     pub fn read(rdr: &mut (impl Read + Seek), len: u64) -> io::Result<Self> {
         let version = rdr.read_u8()?;
         let mut flags: [u8; 3] = [0; 3];
-        rdr.read(&mut flags);
+        rdr.read(&mut flags).unwrap();
 
         let mut remaining = len - 4;
         let creation_time: u64;
@@ -38,7 +38,7 @@ impl MvhdBox {
             remaining -= 16
         }
 
-        rdr.seek(io::SeekFrom::Current(remaining.try_into().unwrap()));
+        rdr.seek(io::SeekFrom::Current(remaining.try_into().unwrap())).unwrap();
         Ok(MvhdBox {
             version,
             flags,

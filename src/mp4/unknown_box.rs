@@ -1,16 +1,15 @@
 use std::{fmt, io::{self, Read, Seek}};
-use byteorder::{BigEndian, ReadBytesExt};
 
 use super::{atom::Atom, four_cc::FourCC};
 
 pub struct UnknownBox {
-    boxtype: FourCC,
-    payload_size: u64
+    pub boxtype: FourCC,
+    pub payload_size: u64
 }
 
 impl UnknownBox {
     pub fn read(rdr: &mut (impl Read + Seek), len: u64, boxtype: FourCC) -> io::Result<Self> {
-        rdr.seek(io::SeekFrom::Current(i64::try_from(len).unwrap()));
+        rdr.seek(io::SeekFrom::Current(i64::try_from(len).unwrap())).unwrap();
         Ok(UnknownBox {
             boxtype,
             payload_size: len

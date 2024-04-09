@@ -1,4 +1,4 @@
-use std::{cmp, io::{self, Read, Seek}};
+use std::{cmp, io::Read};
 
 use byteorder::ReadBytesExt;
 

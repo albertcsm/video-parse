@@ -1,24 +1,23 @@
 use std::{fmt, io::{self, Read, Seek}};
-use byteorder::{BigEndian, ReadBytesExt};
 
 use super::{descriptor_reader::DescriptorReader, nalu::Nalu};
 
 pub struct SpsNalu {
-    profile_idc: u8,
-    level_idc: u8,
-    seq_parameter_set_id: u64,
-    chroma_format_idc: u64,
-    separate_colour_plane_flag: bool,
-    pic_width_in_mbs_minus1: u64,
-    pic_height_in_map_units_minus1: u64,
-    vui_parameters: Option<VuiParameters>,
-    payload_size: u32
+    pub profile_idc: u8,
+    pub level_idc: u8,
+    pub seq_parameter_set_id: u64,
+    pub chroma_format_idc: u64,
+    pub separate_colour_plane_flag: bool,
+    pub pic_width_in_mbs_minus1: u64,
+    pub pic_height_in_map_units_minus1: u64,
+    pub vui_parameters: Option<VuiParameters>,
+    pub payload_size: u32
 }
 
 pub struct VuiParameters {
-    num_units_in_tick: Option<u32>,
-    time_scale: Option<u32>,
-    fixed_frame_rate_flag: Option<bool>
+    pub num_units_in_tick: Option<u32>,
+    pub time_scale: Option<u32>,
+    pub fixed_frame_rate_flag: Option<bool>
 }
 
 impl SpsNalu {
@@ -36,9 +35,9 @@ impl SpsNalu {
                 if chroma_format_idc == 3 {
                     separate_colour_plane_flag = descriptor_reader.read_u1();
                 }
-                let bit_depth_luma_minus8 = descriptor_reader.read_ue_v();
-                let bit_depth_chroma_minus8 = descriptor_reader.read_ue_v();
-                let qpprime_y_zero_transform_bypass_flag = descriptor_reader.read_u1();
+                let _bit_depth_luma_minus8 = descriptor_reader.read_ue_v();
+                let _bit_depth_chroma_minus8 = descriptor_reader.read_ue_v();
+                let _qpprime_y_zero_transform_bypass_flag = descriptor_reader.read_u1();
                 let seq_scaling_matrix_present_flag = descriptor_reader.read_u1();
                 if seq_scaling_matrix_present_flag {
                     for i in 0..=(if chroma_format_idc != 3 { 8 } else { 12 }) {
@@ -53,29 +52,29 @@ impl SpsNalu {
             }
             _ => {}
         }
-        let log2_max_frame_num_minus4 = descriptor_reader.read_ue_v();
+        let _log2_max_frame_num_minus4 = descriptor_reader.read_ue_v();
         let pic_order_cnt_type = descriptor_reader.read_ue_v();
         if pic_order_cnt_type == 0 {
-            let log2_max_pic_order_cnt_lsb_minus4 = descriptor_reader.read_ue_v();
+            let _log2_max_pic_order_cnt_lsb_minus4 = descriptor_reader.read_ue_v();
         } else if pic_order_cnt_type == 1 {
-            let delta_pic_order_always_zero_flag = descriptor_reader.read_u1();
+            let _delta_pic_order_always_zero_flag = descriptor_reader.read_u1();
             todo!()
         }
-        let max_num_ref_frames = descriptor_reader.read_ue_v();
-        let gaps_in_frame_num_value_allowed_flag = descriptor_reader.read_u1();
+        let _max_num_ref_frames = descriptor_reader.read_ue_v();
+        let _gaps_in_frame_num_value_allowed_flag = descriptor_reader.read_u1();
         let pic_width_in_mbs_minus1 = descriptor_reader.read_ue_v();
         let pic_height_in_map_units_minus1 = descriptor_reader.read_ue_v();
         let frame_mbs_only_flag = descriptor_reader.read_u1();
         if !frame_mbs_only_flag {
-            let mb_adaptive_frame_field_flag = descriptor_reader.read_u1();
+            let _mb_adaptive_frame_field_flag = descriptor_reader.read_u1();
         }
-        let direct_8x8_inference_flag = descriptor_reader.read_u1();
+        let _direct_8x8_inference_flag = descriptor_reader.read_u1();
         let frame_cropping_flag = descriptor_reader.read_u1();
         if frame_cropping_flag {
-            let frame_crop_left_offset = descriptor_reader.read_ue_v();
-            let frame_crop_right_offset = descriptor_reader.read_ue_v();
-            let frame_crop_top_offset = descriptor_reader.read_ue_v();
-            let frame_crop_bottom_offset = descriptor_reader.read_ue_v();
+            let _frame_crop_left_offset = descriptor_reader.read_ue_v();
+            let _frame_crop_right_offset = descriptor_reader.read_ue_v();
+            let _frame_crop_top_offset = descriptor_reader.read_ue_v();
+            let _frame_crop_bottom_offset = descriptor_reader.read_ue_v();
         }
         let vui_parameters_present_flag = descriptor_reader.read_u1();
         let mut vui_parameters = Option::None;
@@ -84,7 +83,7 @@ impl SpsNalu {
         }
 
         let read = descriptor_reader.get_num_read_bytes();
-        rdr.seek(io::SeekFrom::Current(i64::from(len) - i64::try_from(read).unwrap()));
+        rdr.seek(io::SeekFrom::Current(i64::from(len) - i64::try_from(read).unwrap())).unwrap();
         Ok(SpsNalu {
             profile_idc,
             level_idc,
@@ -103,23 +102,23 @@ impl SpsNalu {
         if aspect_ratio_info_present_flag {
             let aspect_ratio_idc = descriptor_reader.read_u8();
             if aspect_ratio_idc == 255 {    // Extended_SAR
-                let sar_width = descriptor_reader.read_u16();
-                let sar_height = descriptor_reader.read_u16();
+                let _sar_width = descriptor_reader.read_u16();
+                let _sar_height = descriptor_reader.read_u16();
             }
         }
         let overscan_info_present_flag = descriptor_reader.read_u1();
         if overscan_info_present_flag {
-            let overscan_appropriate_flag = descriptor_reader.read_u1();
+            let _overscan_appropriate_flag = descriptor_reader.read_u1();
         }
         let video_signal_type_present_flag = descriptor_reader.read_u1();
         if video_signal_type_present_flag {
-            let video_format = descriptor_reader.read_u(3);
-            let video_full_range_flag = descriptor_reader.read_u1();
+            let _video_format = descriptor_reader.read_u(3);
+            let _video_full_range_flag = descriptor_reader.read_u1();
             let colour_description_present_flag = descriptor_reader.read_u1();
             if colour_description_present_flag {
-                let colour_primaries = descriptor_reader.read_u8();
-                let transfer_characteristics = descriptor_reader.read_u8();
-                let matrix_coefficients = descriptor_reader.read_u8();
+                let _colour_primaries = descriptor_reader.read_u8();
+                let _transfer_characteristics = descriptor_reader.read_u8();
+                let _matrix_coefficients = descriptor_reader.read_u8();
             }
         }
         let chroma_loc_info_present_flag = descriptor_reader.read_u1();

@@ -1,13 +1,12 @@
 use std::{fmt, io::{self, Read, Seek}};
-use byteorder::{BigEndian, ReadBytesExt};
 
 use super::{descriptor_reader::DescriptorReader, nalu::Nalu};
 
 pub struct IdrNalu {
-    first_mb_in_slice: u64,
-    slice_type: u64,
-    pic_parameter_set_id: u64,
-    payload_size: u32
+    pub first_mb_in_slice: u64,
+    pub slice_type: u64,
+    pub pic_parameter_set_id: u64,
+    pub payload_size: u32
 }
 
 impl IdrNalu {
@@ -18,7 +17,7 @@ impl IdrNalu {
         let pic_parameter_set_id = descriptor_reader.read_ue_v();
 
         let read = descriptor_reader.get_num_read_bytes();
-        rdr.seek(io::SeekFrom::Current(i64::from(len) - i64::try_from(read).unwrap()));
+        rdr.seek(io::SeekFrom::Current(i64::from(len) - i64::try_from(read).unwrap())).unwrap();
         Ok(IdrNalu {
             first_mb_in_slice,
             slice_type,

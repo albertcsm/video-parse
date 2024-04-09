@@ -1,15 +1,14 @@
 use std::{fmt, io::{self, Read, Seek}};
-use byteorder::{BigEndian, ReadBytesExt};
 
-use super::{nalu::Nalu};
+use super::nalu::Nalu;
 
 pub struct PpsNalu {
-    payload_size: u32
+    pub payload_size: u32
 }
 
 impl PpsNalu {
     pub fn read(rdr: &mut (impl Read + Seek), len: u32) -> io::Result<Self> {
-        rdr.seek(io::SeekFrom::Current(i64::try_from(len).unwrap()));
+        rdr.seek(io::SeekFrom::Current(i64::try_from(len).unwrap())).unwrap();
         Ok(PpsNalu {
             payload_size: len
         })

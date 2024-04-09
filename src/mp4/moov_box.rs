@@ -1,11 +1,10 @@
 use std::{fmt, io::{self, Read, Seek}};
-use byteorder::{BigEndian, ReadBytesExt};
 
 use super::{atom::Atom, atom_reader};
 
 pub struct MoovBox {
-    children: Vec<Box<dyn Atom>>,
-    payload_size: u64
+    pub children: Vec<Box<dyn Atom>>,
+    pub payload_size: u64
 }
 
 impl MoovBox {

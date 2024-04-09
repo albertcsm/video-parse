@@ -1,13 +1,12 @@
 use std::{fmt, io::{self, Read, Seek}};
-use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::h264::{nalu::Nalu, nalu_reader};
 
 use super::atom::Atom;
 
 pub struct MdatBox {
-    nalus: Vec<Box<dyn Nalu>>,
-    payload_size: u64
+    pub nalus: Vec<Box<dyn Nalu>>,
+    pub payload_size: u64
 }
 
 impl MdatBox {

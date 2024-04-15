@@ -1,19 +1,19 @@
-use std::{fmt, io::{self, Read, Seek}};
+use std::{fmt, fs::File, io};
 
-use crate::h264::{nalu::Nalu, nalu_reader};
+use crate::h264::nalu_list::NaluList;
 
 use super::atom::Atom;
 
 pub struct MdatBox {
-    pub nalus: Vec<Box<dyn Nalu>>,
+    pub nalu_list: NaluList,
     pub payload_size: u64
 }
 
 impl MdatBox {
-    pub fn read(rdr: &mut (impl Read + Seek), len: u64) -> io::Result<Self> {
-        let nalus = nalu_reader::read_nalus(rdr, len);
+    pub fn read(rdr: &mut File, len: u64) -> io::Result<Self> {
+        let nalu_list = NaluList::read(rdr, len);
         Ok(MdatBox {
-            nalus,
+            nalu_list,
             payload_size: len
         })
     }
@@ -27,7 +27,7 @@ impl Atom for MdatBox {
 
 impl fmt::Display for MdatBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let nalus = self.nalus.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+        let nalus = self.nalu_list.get_units().iter().map(|x| x.to_string()).collect::<Vec<_>>().join("\n  ");
         write!(f, "mdat({})", nalus)
     }
 }

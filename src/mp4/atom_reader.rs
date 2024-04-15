@@ -1,10 +1,10 @@
-use std::io::{Read, Seek};
+use std::fs::File;
 
 use byteorder::{BigEndian, ReadBytesExt};
 
 use super::{atom::Atom, four_cc::FourCC, ftyp_box, mdat_box, moov_box, mvhd_box, unknown_box};
 
-pub fn read_atom(rdr: &mut (impl Read + Seek)) -> Option<Box<dyn Atom>> {
+pub fn read_atom(rdr: &mut File) -> Option<Box<dyn Atom>> {
     let size_u32 = rdr.read_u32::<BigEndian>();
     let size: u64 = match size_u32 {
         Ok(1) => rdr.read_u64::<BigEndian>().unwrap(),
@@ -26,7 +26,7 @@ pub fn read_atom(rdr: &mut (impl Read + Seek)) -> Option<Box<dyn Atom>> {
     }
 }
 
-pub fn read_atoms(rdr: &mut (impl Read + Seek), len: u64) -> Vec<Box<dyn Atom>> {
+pub fn read_atoms(rdr: &mut File, len: u64) -> Vec<Box<dyn Atom>> {
     let mut vec = Vec::new();
     let mut read_len = 0;
     while let Some(atom) = read_atom(rdr) {

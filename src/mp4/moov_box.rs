@@ -1,4 +1,4 @@
-use std::{fmt, io::{self, Read, Seek}};
+use std::{fmt, fs::File, io};
 
 use super::{atom::Atom, atom_reader};
 
@@ -8,7 +8,7 @@ pub struct MoovBox {
 }
 
 impl MoovBox {
-    pub fn read(rdr: &mut (impl Read + Seek), len: u64) -> io::Result<Self> {
+    pub fn read(rdr: &mut File, len: u64) -> io::Result<Self> {
         // rdr.seek(io::SeekFrom::Current(i64::try_from(len).unwrap()));
         let children = atom_reader::read_atoms(rdr, len);
         Ok(MoovBox {

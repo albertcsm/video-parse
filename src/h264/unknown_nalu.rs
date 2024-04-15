@@ -1,4 +1,4 @@
-use std::{fmt, io::{self, Read, Seek}};
+use std::{any::Any, fmt, io::{self, Read, Seek}};
 
 use super::nalu::Nalu;
 
@@ -20,6 +20,10 @@ impl UnknownNalu {
 impl Nalu for UnknownNalu {
     fn get_payload_size(&self) -> u32 {
         self.payload_size
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

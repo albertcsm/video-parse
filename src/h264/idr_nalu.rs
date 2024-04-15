@@ -1,27 +1,21 @@
-use std::{fmt, io::{self, Read, Seek}};
+use std::{any::Any, fmt, io::{self, Read, Seek}};
 
-use super::{descriptor_reader::DescriptorReader, nalu::Nalu};
+use super::{descriptor_reader::DescriptorReader, nalu::Nalu, slice_header::SliceHeader, sps_pps_provider::SpsPpsProvider};
 
 pub struct IdrNalu {
-    pub first_mb_in_slice: u64,
-    pub slice_type: u64,
-    pub pic_parameter_set_id: u64,
+    pub slice_header: SliceHeader,
     pub payload_size: u32
 }
 
 impl IdrNalu {
-    pub fn read(rdr: &mut (impl Read + Seek), len: u32) -> io::Result<Self> {
+    pub fn read<'a>(rdr: &mut (impl Read + Seek), len: u32, sps_pps_provider: &impl SpsPpsProvider) -> io::Result<Self> {
         let mut descriptor_reader = DescriptorReader::new(rdr);
-        let first_mb_in_slice = descriptor_reader.read_ue_v();
-        let slice_type = descriptor_reader.read_ue_v();
-        let pic_parameter_set_id = descriptor_reader.read_ue_v();
+        let slice_header: SliceHeader = SliceHeader::read(&mut descriptor_reader, true, sps_pps_provider);
 
         let read = descriptor_reader.get_num_read_bytes();
         rdr.seek(io::SeekFrom::Current(i64::from(len) - i64::try_from(read).unwrap())).unwrap();
         Ok(IdrNalu {
-            first_mb_in_slice,
-            slice_type,
-            pic_parameter_set_id,
+            slice_header,
             payload_size: len
         })
     }
@@ -31,10 +25,14 @@ impl Nalu for IdrNalu {
     fn get_payload_size(&self) -> u32 {
         self.payload_size
     }
+    
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl fmt::Display for IdrNalu {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[IDR(first_mb_in_slice={}, slice_type={}, pic_parameter_set_id={})]", self.first_mb_in_slice, self.slice_type, self.pic_parameter_set_id)
+        write!(f, "[IDR(slice_type={}, frame_num={}, pic_order_cnt_lsb={})]", self.slice_header.slice_type, self.slice_header.frame_num, self.slice_header.pic_order_cnt_lsb)
     }
 }

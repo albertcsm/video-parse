@@ -1,4 +1,4 @@
-use std::{fmt, io::{self, Read, Seek}};
+use std::{any::Any, fmt, io::{self, Read, Seek}};
 
 use super::{descriptor_reader::DescriptorReader, nalu::Nalu};
 
@@ -8,8 +8,12 @@ pub struct SpsNalu {
     pub seq_parameter_set_id: u64,
     pub chroma_format_idc: u64,
     pub separate_colour_plane_flag: bool,
+    pub log2_max_frame_num_minus4: u64,
+    pub pic_order_cnt_type: u64,
+    pub log2_max_pic_order_cnt_lsb_minus4: u64,
     pub pic_width_in_mbs_minus1: u64,
     pub pic_height_in_map_units_minus1: u64,
+    pub frame_mbs_only_flag: bool,
     pub vui_parameters: Option<VuiParameters>,
     pub payload_size: u32
 }
@@ -52,10 +56,11 @@ impl SpsNalu {
             }
             _ => {}
         }
-        let _log2_max_frame_num_minus4 = descriptor_reader.read_ue_v();
+        let log2_max_frame_num_minus4 = descriptor_reader.read_ue_v();
         let pic_order_cnt_type = descriptor_reader.read_ue_v();
+        let mut log2_max_pic_order_cnt_lsb_minus4 = 0;
         if pic_order_cnt_type == 0 {
-            let _log2_max_pic_order_cnt_lsb_minus4 = descriptor_reader.read_ue_v();
+            log2_max_pic_order_cnt_lsb_minus4 = descriptor_reader.read_ue_v();
         } else if pic_order_cnt_type == 1 {
             let _delta_pic_order_always_zero_flag = descriptor_reader.read_u1();
             todo!()
@@ -90,8 +95,12 @@ impl SpsNalu {
             seq_parameter_set_id,
             chroma_format_idc,
             separate_colour_plane_flag,
+            log2_max_frame_num_minus4,
+            pic_order_cnt_type,
+            log2_max_pic_order_cnt_lsb_minus4,
             pic_width_in_mbs_minus1,
             pic_height_in_map_units_minus1,
+            frame_mbs_only_flag,
             vui_parameters,
             payload_size: len
         })
@@ -145,6 +154,10 @@ impl SpsNalu {
 impl Nalu for SpsNalu {
     fn get_payload_size(&self) -> u32 {
         self.payload_size
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

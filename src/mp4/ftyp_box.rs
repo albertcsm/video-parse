@@ -1,5 +1,5 @@
-use std::{fmt, io::{self, Read}};
-use byteorder::{BigEndian, ReadBytesExt};
+use std::{fmt, io::{self, Read, Write}};
+use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 use super::{atom::Atom, four_cc::FourCC};
 
@@ -33,6 +33,17 @@ impl FtypBox {
 impl Atom for FtypBox {
     fn get_payload_size(&self) -> u64 {
         self.payload_size
+    }
+
+    fn write(&self, wtr: &mut std::fs::File) {
+        let total_size = 8 + self.payload_size;
+        wtr.write_u32::<BigEndian>(total_size.try_into().unwrap()).unwrap();
+        wtr.write_all(b"ftyp").unwrap();
+        self.major_brand.write(wtr);
+        wtr.write_u32::<BigEndian>(self.minor_brand).unwrap();
+        for compatible_brand in &self.compatible_brands {
+            compatible_brand.write(wtr);
+        }
     }
 }
 

@@ -1,4 +1,6 @@
-use std::{fmt, fs::File, io};
+use std::{fmt, fs::File, io::{self, Write}};
+
+use byteorder::{BigEndian, WriteBytesExt};
 
 use crate::h264::nalu_list::NaluList;
 
@@ -22,6 +24,16 @@ impl MdatBox {
 impl Atom for MdatBox {
     fn get_payload_size(&self) -> u64 {
         self.payload_size
+    }
+    
+    fn write(&self, wtr: &mut File) {
+        let total_size = 8 + self.payload_size;
+        wtr.write_u32::<BigEndian>(total_size.try_into().unwrap()).unwrap();
+        wtr.write_all(b"mdat").unwrap();
+
+        // TODO: write actual NALUs
+        let remaining = vec![0u8; self.payload_size.try_into().unwrap()];
+        wtr.write_all(&remaining).unwrap();
     }
 }
 

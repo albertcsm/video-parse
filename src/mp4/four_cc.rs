@@ -1,4 +1,4 @@
-use std::{fmt, io::{self, Read}};
+use std::{fmt, io::{self, Read, Write}};
 
 #[derive(PartialEq, Eq)]
 pub struct FourCC {
@@ -13,6 +13,10 @@ impl FourCC {
         Ok(FourCC {
             data
         })
+    }
+
+    pub fn write(&self, wtr: &mut impl Write) {
+        wtr.write(&self.data).unwrap();
     }
 }
 

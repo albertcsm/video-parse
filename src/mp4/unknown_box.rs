@@ -1,17 +1,23 @@
-use std::{fmt, io::{self, Read, Seek}};
+use std::{fmt, fs::File, io::{self, Read, Seek, Write}};
+
+use byteorder::{BigEndian, WriteBytesExt};
 
 use super::{atom::Atom, four_cc::FourCC};
 
 pub struct UnknownBox {
     pub boxtype: FourCC,
+    pub remaining: Vec<u8>,
     pub payload_size: u64
 }
 
 impl UnknownBox {
     pub fn read(rdr: &mut (impl Read + Seek), len: u64, boxtype: FourCC) -> io::Result<Self> {
-        rdr.seek(io::SeekFrom::Current(i64::try_from(len).unwrap())).unwrap();
+        let mut remaining = vec![0u8; len.try_into().unwrap()];
+        rdr.read_exact(&mut remaining).unwrap();
+
         Ok(UnknownBox {
             boxtype,
+            remaining,
             payload_size: len
         })
     }
@@ -20,6 +26,13 @@ impl UnknownBox {
 impl Atom for UnknownBox {
     fn get_payload_size(&self) -> u64 {
         self.payload_size
+    }
+
+    fn write(&self, wtr: &mut File) {
+        let total_size = 8 + self.remaining.len();
+        wtr.write_u32::<BigEndian>(total_size.try_into().unwrap()).unwrap();
+        self.boxtype.write(wtr);
+        wtr.write_all(&self.remaining).unwrap();
     }
 }
 

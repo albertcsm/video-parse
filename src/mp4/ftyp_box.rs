@@ -1,4 +1,4 @@
-use std::{fmt, io::{self, Read, Write}};
+use std::{any::Any, fmt, io::{self, Read, Write}};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 use super::{atom::Atom, four_cc::FourCC};
@@ -44,6 +44,10 @@ impl Atom for FtypBox {
         for compatible_brand in &self.compatible_brands {
             compatible_brand.write(wtr);
         }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

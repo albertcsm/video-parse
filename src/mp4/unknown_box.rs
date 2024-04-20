@@ -1,4 +1,4 @@
-use std::{fmt, fs::File, io::{self, Read, Seek, Write}};
+use std::{any::Any, fmt, fs::File, io::{self, Read, Seek, Write}};
 
 use byteorder::{BigEndian, WriteBytesExt};
 
@@ -33,6 +33,10 @@ impl Atom for UnknownBox {
         wtr.write_u32::<BigEndian>(total_size.try_into().unwrap()).unwrap();
         self.boxtype.write(wtr);
         wtr.write_all(&self.remaining).unwrap();
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

@@ -1,4 +1,4 @@
-use std::{fmt, fs::File, io::{self, Read, Seek, Write}};
+use std::{any::Any, fmt, fs::File, io::{self, Read, Seek, Write}};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 use super::atom::Atom;
@@ -78,6 +78,11 @@ impl Atom for MvhdBox {
         }
         wtr.write_all(&self.remaining).unwrap();
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
 }
 
 impl fmt::Display for MvhdBox {

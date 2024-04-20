@@ -1,4 +1,4 @@
-use std::{fmt, fs::File, io::{self, Write}};
+use std::{any::Any, fmt, fs::File, io::{self, Write}};
 
 use byteorder::{BigEndian, WriteBytesExt};
 
@@ -32,6 +32,10 @@ impl Atom for MdatBox {
         wtr.write_all(b"mdat").unwrap();
 
         self.nalu_list.write(wtr);
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

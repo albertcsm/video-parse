@@ -1,4 +1,4 @@
-use std::{fmt, fs::File, io::{self, Write}};
+use std::{any::Any, fmt, fs::File, io::{self, Write}};
 
 use byteorder::{BigEndian, WriteBytesExt};
 
@@ -30,6 +30,10 @@ impl Atom for MoovBox {
         wtr.write_u32::<BigEndian>(total_size.try_into().unwrap()).unwrap();
         wtr.write_all(b"moov").unwrap();
         self.box_list.write(wtr);
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

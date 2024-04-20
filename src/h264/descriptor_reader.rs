@@ -64,6 +64,10 @@ impl<'a> DescriptorReader<'a> {
         self.read_u(bits + 1) - 1
     }
 
+    pub fn get_residue(&mut self) -> (u8, u8) {
+        (self.residue_bits, self.residue_value)
+    }
+
     pub fn get_num_read_bytes(&self) -> u64 {
         self.num_read_bytes
     }

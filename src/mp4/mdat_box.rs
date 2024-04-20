@@ -31,9 +31,7 @@ impl Atom for MdatBox {
         wtr.write_u32::<BigEndian>(total_size.try_into().unwrap()).unwrap();
         wtr.write_all(b"mdat").unwrap();
 
-        // TODO: write actual NALUs
-        let remaining = vec![0u8; self.payload_size.try_into().unwrap()];
-        wtr.write_all(&remaining).unwrap();
+        self.nalu_list.write(wtr);
     }
 }
 

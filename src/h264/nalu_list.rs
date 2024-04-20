@@ -28,6 +28,12 @@ impl NaluList {
         &self.units
     }
 
+    pub fn write(&self, wtr: &mut File) {
+        for unit in &self.units {
+            unit.write(wtr);
+        }
+    }
+
     fn read_nalu(&mut self, rdr: &mut File) -> u32 {
         let size = rdr.read_u32::<BigEndian>().unwrap();
         let header = rdr.read_u8().unwrap();

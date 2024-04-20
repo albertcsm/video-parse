@@ -1,10 +1,12 @@
-use std::{any::Any, fmt, io::{self, Read, Seek}};
+use std::{any::Any, fmt, fs::File, io::{self, Read, Seek}};
 
-use super::{descriptor_reader::DescriptorReader, nalu::Nalu};
+use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu};
 
 pub struct PpsNalu {
     pub pic_parameter_set_id: u64,
     pub seq_parameter_set_id: u64,
+    residue: (u8, u8),
+    remaining: Vec<u8>,
     pub payload_size: u32
 }
 
@@ -13,12 +15,17 @@ impl PpsNalu {
         let mut descriptor_reader = DescriptorReader::new(rdr);
         let pic_parameter_set_id = descriptor_reader.read_ue_v();
         let seq_parameter_set_id = descriptor_reader.read_ue_v();
-        
-        let read = descriptor_reader.get_num_read_bytes();
-        rdr.seek(io::SeekFrom::Current(i64::from(len) - i64::try_from(read).unwrap())).unwrap();
+
+        let residue = descriptor_reader.get_residue();
+        let remaining_len: u64 = u64::from(len) - descriptor_reader.get_num_read_bytes();
+        let mut remaining = vec![0u8; remaining_len.try_into().unwrap()];
+        rdr.read_exact(&mut remaining).unwrap();
+
         Ok(PpsNalu {
             pic_parameter_set_id,
             seq_parameter_set_id,
+            residue,
+            remaining,
             payload_size: len
         })
     }
@@ -29,6 +36,16 @@ impl Nalu for PpsNalu {
         self.payload_size
     }
     
+    fn write(&self, wtr: &mut File) {
+        let mut descriptor_writer = DescriptorWriter::new(wtr);
+        descriptor_writer.append_ue_v(self.pic_parameter_set_id);
+        descriptor_writer.append_ue_v(self.seq_parameter_set_id);
+
+        descriptor_writer.append_u(self.residue.0, self.residue.1.into());
+        descriptor_writer.append_all(&self.remaining);
+        descriptor_writer.write_with_size_and_header(0x68);        
+    }
+
     fn as_any(&self) -> &dyn Any {
         self
     }

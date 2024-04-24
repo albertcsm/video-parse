@@ -42,7 +42,7 @@ impl NaluList {
         let payload_size = size - 1;
         match nal_unit_type {
             1 => {
-                let unit = NonIdrNalu::read(rdr, payload_size, self).unwrap();
+                let unit = NonIdrNalu::read(rdr, payload_size, header, self).unwrap();
                 let payload_size = unit.payload_size;
                 self.units.push(Box::new(unit));
                 payload_size

@@ -3,6 +3,7 @@ use std::{any::Any, fmt, fs::File, io::{self, Read, Seek}};
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, slice_header::SliceHeader, sps_pps_provider::SpsPpsProvider};
 
 pub struct NonIdrNalu {
+    pub header: u8,
     pub slice_header: SliceHeader,
     residue: (u8, u8),
     remaining: Vec<u8>,
@@ -10,7 +11,7 @@ pub struct NonIdrNalu {
 }
 
 impl NonIdrNalu {
-    pub fn read(rdr: &mut (impl Read + Seek), len: u32, sps_pps_provider: &impl SpsPpsProvider) -> io::Result<Self> {
+    pub fn read(rdr: &mut (impl Read + Seek), len: u32, header: u8, sps_pps_provider: &impl SpsPpsProvider) -> io::Result<Self> {
         let mut descriptor_reader = DescriptorReader::new(rdr);
         let slice_header = SliceHeader::read(&mut descriptor_reader, false, sps_pps_provider);
 
@@ -20,6 +21,7 @@ impl NonIdrNalu {
         rdr.read_exact(&mut remaining).unwrap();
 
         Ok(NonIdrNalu {
+            header,
             slice_header,
             residue,
             remaining,
@@ -39,7 +41,7 @@ impl Nalu for NonIdrNalu {
         
         descriptor_writer.append_u(self.residue.0, self.residue.1.into());
         descriptor_writer.append_all(&self.remaining);
-        descriptor_writer.write_with_size_and_header(0x41);
+        descriptor_writer.write_with_size_and_header(self.header);
     }
 
     fn as_any(&self) -> &dyn Any {

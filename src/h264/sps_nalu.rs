@@ -1,8 +1,8 @@
 use std::{any::Any, fmt, fs::File, io::{self, Read, Seek}};
 
+use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, vui_parameters::VuiParameters};
 
-use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu};
-
+#[derive(Debug)]
 pub struct SpsNalu {
     pub profile_idc: u8,
     pub constraint_set0_flag: bool,
@@ -38,27 +38,6 @@ pub struct SpsNalu {
     residue: (u8, u8),
     remaining: Vec<u8>,
     pub payload_size: u32
-}
-
-pub struct VuiParameters {
-    pub aspect_ratio_info_present_flag: bool,
-    pub aspect_ratio_idc: u8,
-    pub sar_width: u16,
-    pub sar_height: u16,
-    pub overscan_info_present_flag: bool,
-    pub overscan_appropriate_flag: bool,
-    pub video_signal_type_present_flag: bool,
-    pub video_format: u64,
-    pub video_full_range_flag: bool,
-    pub colour_description_present_flag: bool,
-    pub colour_primaries: u8,
-    pub transfer_characteristics: u8,
-    pub matrix_coefficients: u8,
-    pub chroma_loc_info_present_flag: bool,
-    pub timing_info_present_flag: bool,
-    pub num_units_in_tick: Option<u32>,
-    pub time_scale: Option<u32>,
-    pub fixed_frame_rate_flag: Option<bool>
 }
 
 impl SpsNalu {
@@ -133,7 +112,7 @@ impl SpsNalu {
         let vui_parameters_present_flag = descriptor_reader.read_u1();
         let mut vui_parameters = Option::None;
         if vui_parameters_present_flag {
-            vui_parameters = Option::Some(SpsNalu::read_vui(&mut descriptor_reader));
+            vui_parameters = Option::Some(VuiParameters::read(&mut descriptor_reader));
         }
 
         let residue = descriptor_reader.get_residue();
@@ -177,115 +156,6 @@ impl SpsNalu {
             remaining,
             payload_size: len
         })
-    }
-
-    fn read_vui(descriptor_reader: &mut DescriptorReader) -> VuiParameters {
-        let aspect_ratio_info_present_flag = descriptor_reader.read_u1();
-        let mut aspect_ratio_idc = 0;
-        let mut sar_width = 0;
-        let mut sar_height = 0;
-        if aspect_ratio_info_present_flag {
-            aspect_ratio_idc = descriptor_reader.read_u8();
-            if aspect_ratio_idc == 255 {    // Extended_SAR
-                sar_width = descriptor_reader.read_u16();
-                sar_height = descriptor_reader.read_u16();
-            }
-        }
-        let overscan_info_present_flag = descriptor_reader.read_u1();
-        let mut overscan_appropriate_flag = false;
-        if overscan_info_present_flag {
-            overscan_appropriate_flag = descriptor_reader.read_u1();
-        }
-        let video_signal_type_present_flag = descriptor_reader.read_u1();
-        let mut video_format = 0;
-        let mut video_full_range_flag = false;
-        let mut colour_description_present_flag = false;
-        let mut colour_primaries = 0;
-        let mut transfer_characteristics = 0;
-        let mut matrix_coefficients = 0;
-        if video_signal_type_present_flag {
-            video_format = descriptor_reader.read_u(3);
-            video_full_range_flag = descriptor_reader.read_u1();
-            colour_description_present_flag = descriptor_reader.read_u1();
-            if colour_description_present_flag {
-                colour_primaries = descriptor_reader.read_u8();
-                transfer_characteristics = descriptor_reader.read_u8();
-                matrix_coefficients = descriptor_reader.read_u8();
-            }
-        }
-        let chroma_loc_info_present_flag = descriptor_reader.read_u1();
-        if chroma_loc_info_present_flag {
-            todo!()
-        }
-        let timing_info_present_flag = descriptor_reader.read_u1();
-        let mut num_units_in_tick = Option::None;
-        let mut time_scale = Option::None;
-        let mut fixed_frame_rate_flag = Option::None;
-        if timing_info_present_flag {
-            num_units_in_tick = Option::Some(descriptor_reader.read_u32());
-            time_scale = Option::Some(descriptor_reader.read_u32());
-            fixed_frame_rate_flag = Option::Some(descriptor_reader.read_u1());
-        }
-        VuiParameters {
-            aspect_ratio_info_present_flag,
-            aspect_ratio_idc,
-            sar_width,
-            sar_height,
-            overscan_info_present_flag,
-            overscan_appropriate_flag,
-            video_signal_type_present_flag,
-            video_format,
-            video_full_range_flag,
-            colour_description_present_flag,
-            colour_primaries,
-            transfer_characteristics,
-            matrix_coefficients,
-            chroma_loc_info_present_flag,
-            timing_info_present_flag,
-            num_units_in_tick,
-            time_scale,
-            fixed_frame_rate_flag
-        }
-    }
-
-    fn write_vui(vui: &VuiParameters, descriptor_writer: &mut DescriptorWriter) {
-        descriptor_writer.append_u1(vui.aspect_ratio_info_present_flag);
-        if vui.aspect_ratio_info_present_flag {
-            descriptor_writer.append_u8(vui.aspect_ratio_idc);
-            if vui.aspect_ratio_idc == 255 {    // Extended_SAR
-                descriptor_writer.append_u16(vui.sar_width);
-                descriptor_writer.append_u16(vui.sar_height);
-            }
-        }
-
-        descriptor_writer.append_u1(vui.overscan_info_present_flag);
-        if vui.overscan_info_present_flag {
-            descriptor_writer.append_u1(vui.overscan_appropriate_flag);
-        }
-
-        descriptor_writer.append_u1(vui.video_signal_type_present_flag);
-        if vui.video_signal_type_present_flag {
-            descriptor_writer.append_u(3, vui.video_format);
-            descriptor_writer.append_u1(vui.video_full_range_flag);
-            descriptor_writer.append_u1(vui.colour_description_present_flag);
-            if vui.colour_description_present_flag {
-                descriptor_writer.append_u8(vui.colour_primaries);
-                descriptor_writer.append_u8(vui.transfer_characteristics);
-                descriptor_writer.append_u8(vui.matrix_coefficients);
-            }
-        }
-
-        descriptor_writer.append_u1(vui.chroma_loc_info_present_flag);
-        if vui.chroma_loc_info_present_flag {
-            todo!()
-        }
-
-        descriptor_writer.append_u1(vui.timing_info_present_flag);
-        if vui.timing_info_present_flag {
-            descriptor_writer.append_u32(vui.num_units_in_tick.unwrap());
-            descriptor_writer.append_u32(vui.time_scale.unwrap());
-            descriptor_writer.append_u1(vui.fixed_frame_rate_flag.unwrap());
-        }
     }
 }
 
@@ -350,7 +220,7 @@ impl Nalu for SpsNalu {
         match &self.vui_parameters {
             Some(vui_parameters) => {
                 descriptor_writer.append_u1(true);
-                SpsNalu::write_vui(vui_parameters, &mut descriptor_writer);
+                vui_parameters.write(&mut descriptor_writer);
             },
             None => descriptor_writer.append_u1(false)
         }

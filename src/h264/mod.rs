@@ -1,5 +1,7 @@
 pub mod nalu;
 pub mod sps_nalu;
+pub mod vui_parameters;
+pub mod hrd_parameters;
 pub mod pps_nalu;
 pub mod sps_pps_provider;
 pub mod sei_nalu;

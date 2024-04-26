@@ -1,4 +1,4 @@
-use std::{any::Any, fmt, fs::File, io::{self, Read, Seek}};
+use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
 
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, vui_parameters::VuiParameters};
 
@@ -35,8 +35,6 @@ pub struct SpsNalu {
     pub frame_crop_top_offset: u64,
     pub frame_crop_bottom_offset: u64,
     pub vui_parameters: Option<VuiParameters>,
-    residue: (u8, u8),
-    remaining: Vec<u8>,
     pub payload_size: u32
 }
 
@@ -115,11 +113,6 @@ impl SpsNalu {
             vui_parameters = Option::Some(VuiParameters::read(&mut descriptor_reader));
         }
 
-        let residue = descriptor_reader.get_residue();
-        let remaining_len: u64 = u64::from(len) - descriptor_reader.get_num_read_bytes();
-        let mut remaining = vec![0u8; remaining_len.try_into().unwrap()];
-        rdr.read_exact(&mut remaining).unwrap();
-
         Ok(SpsNalu {
             profile_idc,
             constraint_set0_flag,
@@ -152,8 +145,6 @@ impl SpsNalu {
             frame_crop_top_offset,
             frame_crop_bottom_offset,
             vui_parameters,
-            residue,
-            remaining,
             payload_size: len
         })
     }
@@ -164,7 +155,7 @@ impl Nalu for SpsNalu {
         self.payload_size
     }
 
-    fn write(&self, wtr: &mut File) {
+    fn write(&self, wtr: &mut dyn Write) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_u8(self.profile_idc);
         descriptor_writer.append_u1(self.constraint_set0_flag);
@@ -225,8 +216,7 @@ impl Nalu for SpsNalu {
             None => descriptor_writer.append_u1(false)
         }
 
-        descriptor_writer.append_u(self.residue.0, self.residue.1.into());
-        descriptor_writer.append_all(&self.remaining);
+        descriptor_writer.append_rbsp_trailing_bits();
         descriptor_writer.write_with_size_and_header(0x67);
     }
 

@@ -1,4 +1,4 @@
-use std::{any::Any, fmt, fs::File, io::{self, Write}};
+use std::{any::Any, fmt, fs::File, io::{self, Cursor, Write}};
 
 use byteorder::{BigEndian, WriteBytesExt};
 
@@ -27,11 +27,14 @@ impl Atom for MdatBox {
     }
     
     fn write(&self, wtr: &mut File) {
-        let total_size = 8 + self.payload_size;
-        wtr.write_u32::<BigEndian>(total_size.try_into().unwrap()).unwrap();
-        wtr.write_all(b"mdat").unwrap();
+        let mut cursor = Cursor::new(Vec::new());
+        self.nalu_list.write(&mut cursor);
+        let buffer = cursor.into_inner();
+        let total_size = 8 + buffer.len();  // total size includes the size field itself
 
-        self.nalu_list.write(wtr);
+        wtr.write_u32::<BigEndian>(total_size.try_into().unwrap()).unwrap();        
+        wtr.write_all(b"mdat").unwrap();
+        wtr.write_all(&buffer).unwrap();
     }
 
     fn as_any(&self) -> &dyn Any {

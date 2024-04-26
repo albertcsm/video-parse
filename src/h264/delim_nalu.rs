@@ -1,4 +1,4 @@
-use std::{any::Any, fmt, fs::File, io::{self, Read, Seek}};
+use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
 
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu};
 
@@ -26,7 +26,7 @@ impl Nalu for DelimNalu {
         self.payload_size
     }
 
-    fn write(&self, wtr: &mut File) {
+    fn write(&self, wtr: &mut dyn Write) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_all(&self.remaining);
         descriptor_writer.write_with_size_and_header(0x09);

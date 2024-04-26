@@ -1,4 +1,4 @@
-use std::{any::Any, fmt, fs::File, io::{self, Read, Seek}};
+use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
 
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, slice_header::SliceHeader, sps_pps_provider::SpsPpsProvider};
 
@@ -35,7 +35,7 @@ impl Nalu for NonIdrNalu {
         self.payload_size
     }
 
-    fn write(&self, wtr: &mut File) {
+    fn write(&self, wtr: &mut dyn Write) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         self.slice_header.write(&mut descriptor_writer);
         

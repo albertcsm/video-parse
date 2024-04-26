@@ -76,8 +76,15 @@ impl<'a> DescriptorWriter<'a> {
         self.buffer.write_all(&values).unwrap();
     }
 
+    pub fn append_rbsp_trailing_bits(&mut self) {
+        self.append_u1(true);
+        if self.residue_bits > 0 {
+            self.append_u(8-self.residue_bits, 0);
+        }
+    }
+
     pub fn write_with_size_and_header(&mut self, header: u8) {
-        let len = self.buffer.len() + 1;
+        let len = self.buffer.len() + 1;    // includes 1-byte header, but excludes the size field itself
         self.wtr.write_u32::<BigEndian>(len.try_into().unwrap()).unwrap();
         self.wtr.write_u8(header).unwrap();
         self.wtr.write_all(&self.buffer).unwrap();

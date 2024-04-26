@@ -1,4 +1,4 @@
-use std::{any::Any, fmt, fs::File, io::{self, Read, Seek}};
+use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
 
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu};
 
@@ -36,7 +36,7 @@ impl Nalu for PpsNalu {
         self.payload_size
     }
     
-    fn write(&self, wtr: &mut File) {
+    fn write(&self, wtr: &mut dyn Write) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_ue_v(self.pic_parameter_set_id);
         descriptor_writer.append_ue_v(self.seq_parameter_set_id);

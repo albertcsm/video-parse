@@ -1,6 +1,6 @@
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HrdParameters {
     pub cpb_cnt_minus1: u64,
     pub bit_rate_scale: u8,

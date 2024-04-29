@@ -83,6 +83,9 @@ impl Atom for MvhdBox {
         self
     }
 
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 impl fmt::Display for MvhdBox {

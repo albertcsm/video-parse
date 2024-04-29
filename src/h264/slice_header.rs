@@ -1,4 +1,3 @@
-
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, sps_pps_provider::SpsPpsProvider};
 
 pub struct SliceHeader {
@@ -12,11 +11,6 @@ pub struct SliceHeader {
     pub bottom_field_flag: bool,
     pub idr_pic_id: u64,
     pub pic_order_cnt_lsb: u64,
-    sps_separate_colour_plane_flag: bool,
-    sps_log2_max_frame_num_minus4: u64,
-    sps_frame_mbs_only_flag: bool,
-    sps_pic_order_cnt_type: u64,
-    sps_log2_max_pic_order_cnt_lsb_minus4: u64
 }
 
 impl SliceHeader {
@@ -59,25 +53,23 @@ impl SliceHeader {
             field_pic_flag,
             bottom_field_flag,
             idr_pic_id,
-            pic_order_cnt_lsb,
-            sps_separate_colour_plane_flag: sps.separate_colour_plane_flag,
-            sps_log2_max_frame_num_minus4: sps.log2_max_frame_num_minus4,
-            sps_frame_mbs_only_flag: sps.frame_mbs_only_flag,
-            sps_pic_order_cnt_type: sps.pic_order_cnt_type,
-            sps_log2_max_pic_order_cnt_lsb_minus4: sps.log2_max_pic_order_cnt_lsb_minus4
+            pic_order_cnt_lsb
         }
     }
 
-    pub fn write(&self, descriptor_writer: &mut DescriptorWriter) {
+    pub fn write(&self, descriptor_writer: &mut DescriptorWriter, sps_pps_provider: &dyn SpsPpsProvider) {
+        let pps = sps_pps_provider.get_pps(self.pic_parameter_set_id).unwrap();
+        let sps = sps_pps_provider.get_sps(pps.seq_parameter_set_id).unwrap();
+
         descriptor_writer.append_ue_v(self.first_mb_in_slice);
         descriptor_writer.append_ue_v(self.slice_type);
         descriptor_writer.append_ue_v(self.pic_parameter_set_id);
-        if self.sps_separate_colour_plane_flag {
+        if sps.separate_colour_plane_flag {
             descriptor_writer.append_u(2, self.colour_plane_id.into());
         }
-        let frame_num_bits = self.sps_log2_max_frame_num_minus4 + 4;
+        let frame_num_bits = sps.log2_max_frame_num_minus4 + 4;
         descriptor_writer.append_u(u8::try_from(frame_num_bits).unwrap(), self.frame_num);
-        if !self.sps_frame_mbs_only_flag {
+        if !sps.frame_mbs_only_flag {
             descriptor_writer.append_u1(self.field_pic_flag);
             if self.field_pic_flag {
                 descriptor_writer.append_u1(self.bottom_field_flag);
@@ -86,8 +78,8 @@ impl SliceHeader {
         if self.idr_pic_flag {
             descriptor_writer.append_ue_v(self.idr_pic_id);
         }
-        if self.sps_pic_order_cnt_type == 0 {
-            let pic_order_cnt_lsb_bits = self.sps_log2_max_pic_order_cnt_lsb_minus4 + 4;
+        if sps.pic_order_cnt_type == 0 {
+            let pic_order_cnt_lsb_bits = sps.log2_max_pic_order_cnt_lsb_minus4 + 4;
             descriptor_writer.append_u(u8::try_from(pic_order_cnt_lsb_bits).unwrap(), self.pic_order_cnt_lsb);
         }
     }

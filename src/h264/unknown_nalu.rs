@@ -1,6 +1,6 @@
 use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
 
-use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu};
+use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, sps_pps_provider::SpsPpsProvider};
 
 pub struct UnknownNalu {
     pub nal_unit_type: u8,
@@ -28,13 +28,17 @@ impl Nalu for UnknownNalu {
         self.payload_size
     }
 
-    fn write(&self, wtr: &mut dyn Write) {
+    fn write(&self, wtr: &mut dyn Write, _sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_all(&self.remaining);
         descriptor_writer.write_with_size_and_header(self.nal_unit_type);
     }
 
     fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }

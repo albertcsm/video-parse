@@ -1,8 +1,8 @@
 use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
 
-use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, vui_parameters::VuiParameters};
+use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, sps_pps_provider::SpsPpsProvider, vui_parameters::VuiParameters};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SpsNalu {
     pub profile_idc: u8,
     pub constraint_set0_flag: bool,
@@ -155,7 +155,7 @@ impl Nalu for SpsNalu {
         self.payload_size
     }
 
-    fn write(&self, wtr: &mut dyn Write) {
+    fn write(&self, wtr: &mut dyn Write, _sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_u8(self.profile_idc);
         descriptor_writer.append_u1(self.constraint_set0_flag);
@@ -221,6 +221,10 @@ impl Nalu for SpsNalu {
     }
 
     fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }

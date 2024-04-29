@@ -40,11 +40,15 @@ impl Atom for MdatBox {
     fn as_any(&self) -> &dyn Any {
         self
     }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 impl fmt::Display for MdatBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let nalus = self.nalu_list.get_units().iter().map(|x| x.to_string()).collect::<Vec<_>>().join("\n  ");
+        let nalus = self.nalu_list.units.iter().map(|x| x.to_string()).collect::<Vec<_>>().join("\n  ");
         write!(f, "mdat({})", nalus)
     }
 }

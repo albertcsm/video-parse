@@ -1,6 +1,6 @@
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, hrd_parameters::HrdParameters};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VuiParameters {
     pub aspect_ratio_info_present_flag: bool,
     pub aspect_ratio_idc: u8,

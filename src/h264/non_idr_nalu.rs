@@ -35,9 +35,9 @@ impl Nalu for NonIdrNalu {
         self.payload_size
     }
 
-    fn write(&self, wtr: &mut dyn Write) {
+    fn write(&self, wtr: &mut dyn Write, sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
-        self.slice_header.write(&mut descriptor_writer);
+        self.slice_header.write(&mut descriptor_writer, sps_pps_provider);
         
         descriptor_writer.append_u(self.residue.0, self.residue.1.into());
         descriptor_writer.append_all(&self.remaining);
@@ -45,6 +45,10 @@ impl Nalu for NonIdrNalu {
     }
 
     fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }

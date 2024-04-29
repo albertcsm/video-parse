@@ -5,7 +5,7 @@ use byteorder::{BigEndian, ReadBytesExt};
 use super::{delim_nalu::DelimNalu, idr_nalu::IdrNalu, nalu::Nalu, non_idr_nalu::NonIdrNalu, pps_nalu::PpsNalu, sei_nalu::SeiNalu, sps_nalu::SpsNalu, sps_pps_provider::SpsPpsProvider, unknown_nalu::UnknownNalu};
 
 pub struct NaluList {
-    units: Vec<Box<dyn Nalu>>
+    pub units: Vec<Box<dyn Nalu>>
 }
 
 impl NaluList {
@@ -24,13 +24,9 @@ impl NaluList {
         list
     }
 
-    pub fn get_units(&self) -> &Vec<Box<dyn Nalu>> {
-        &self.units
-    }
-
-    pub fn write(&self, wtr: &mut File) {
+    pub fn write(&self, wtr: &mut dyn Write) {
         for unit in &self.units {
-            unit.write(wtr);
+            unit.write(wtr, self);
         }
     }
 

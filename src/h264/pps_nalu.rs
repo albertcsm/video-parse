@@ -1,7 +1,8 @@
 use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
 
-use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu};
+use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, sps_pps_provider::SpsPpsProvider};
 
+#[derive(Debug, Clone)]
 pub struct PpsNalu {
     pub pic_parameter_set_id: u64,
     pub seq_parameter_set_id: u64,
@@ -36,7 +37,7 @@ impl Nalu for PpsNalu {
         self.payload_size
     }
     
-    fn write(&self, wtr: &mut dyn Write) {
+    fn write(&self, wtr: &mut dyn Write, _sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_ue_v(self.pic_parameter_set_id);
         descriptor_writer.append_ue_v(self.seq_parameter_set_id);
@@ -47,6 +48,10 @@ impl Nalu for PpsNalu {
     }
 
     fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }

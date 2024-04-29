@@ -1,6 +1,6 @@
 use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
 
-use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu};
+use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, sps_pps_provider::SpsPpsProvider};
 
 pub struct SeiNalu {
     remaining: Vec<u8>,
@@ -26,13 +26,17 @@ impl Nalu for SeiNalu {
         self.payload_size
     }
 
-    fn write(&self, wtr: &mut dyn Write) {
+    fn write(&self, wtr: &mut dyn Write, _sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_all(&self.remaining);
         descriptor_writer.write_with_size_and_header(0x06);
     }
 
     fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }

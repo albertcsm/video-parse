@@ -103,7 +103,7 @@ fn main() {
                 }
             }
         }
-        // println!("{}", atom);
+        println!("{}", atom);
     }
 
     let mut out_file = File::create("clone.mp4").unwrap();

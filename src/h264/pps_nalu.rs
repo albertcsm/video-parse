@@ -1,4 +1,4 @@
-use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
+use std::{any::Any, fmt, io::{self, Read, Write}};
 
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, sps_pps_provider::SpsPpsProvider};
 
@@ -12,7 +12,7 @@ pub struct PpsNalu {
 }
 
 impl PpsNalu {
-    pub fn read(rdr: &mut (impl Read + Seek), len: u32) -> io::Result<Self> {
+    pub fn read(rdr: &mut impl Read, len: u32) -> io::Result<Self> {
         let mut descriptor_reader = DescriptorReader::new(rdr);
         let pic_parameter_set_id = descriptor_reader.read_ue_v();
         let seq_parameter_set_id = descriptor_reader.read_ue_v();
@@ -33,10 +33,6 @@ impl PpsNalu {
 }
 
 impl Nalu for PpsNalu {
-    fn get_payload_size(&self) -> u32 {
-        self.payload_size
-    }
-    
     fn write(&self, wtr: &mut dyn Write, _sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_ue_v(self.pic_parameter_set_id);
@@ -44,7 +40,7 @@ impl Nalu for PpsNalu {
 
         descriptor_writer.append_u(self.residue.0, self.residue.1.into());
         descriptor_writer.append_all(&self.remaining);
-        descriptor_writer.write_with_size_and_header(0x68);        
+        descriptor_writer.write_with_header(0x68);
     }
 
     fn as_any(&self) -> &dyn Any {

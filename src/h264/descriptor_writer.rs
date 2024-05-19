@@ -1,6 +1,6 @@
 use std::{cmp, io::Write};
 
-use byteorder::{BigEndian, WriteBytesExt};
+use byteorder::WriteBytesExt;
 
 pub struct DescriptorWriter<'a> {
     wtr: &'a mut (dyn Write),
@@ -83,13 +83,19 @@ impl<'a> DescriptorWriter<'a> {
         }
     }
 
-    pub fn write_with_size_and_header(&mut self, header: u8) {
-        let len = self.buffer.len() + 1;    // includes 1-byte header, but excludes the size field itself
-        self.wtr.write_u32::<BigEndian>(len.try_into().unwrap()).unwrap();
+    pub fn write_with_header(&mut self, header: u8) {
         self.wtr.write_u8(header).unwrap();
         self.wtr.write_all(&self.buffer).unwrap();
         self.buffer.clear();
     }
+
+    // pub fn write_with_size_and_header(&mut self, header: u8) {
+    //     let len = self.buffer.len() + 1;    // includes 1-byte header, but excludes the size field itself
+    //     self.wtr.write_u32::<BigEndian>(len.try_into().unwrap()).unwrap();
+    //     self.wtr.write_u8(header).unwrap();
+    //     self.wtr.write_all(&self.buffer).unwrap();
+    //     self.buffer.clear();
+    // }
 
     fn count_bits(value: u64) -> u8 {
         match value {

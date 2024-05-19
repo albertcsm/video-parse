@@ -1,16 +1,16 @@
 use std::{fs::File, io::Write};
 
-use byteorder::{BigEndian, ReadBytesExt};
+use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
-use super::{delim_nalu::DelimNalu, idr_nalu::IdrNalu, nalu::Nalu, non_idr_nalu::NonIdrNalu, pps_nalu::PpsNalu, sei_nalu::SeiNalu, sps_nalu::SpsNalu, sps_pps_provider::SpsPpsProvider, unknown_nalu::UnknownNalu};
+use crate::h264::{delim_nalu::DelimNalu, idr_nalu::IdrNalu, nalu::Nalu, non_idr_nalu::NonIdrNalu, pps_nalu::PpsNalu, sei_nalu::SeiNalu, sps_nalu::SpsNalu, sps_pps_provider::SpsPpsProvider, unknown_nalu::UnknownNalu};
 
-pub struct NaluList {
+pub struct H264NaluList {
     pub units: Vec<Box<dyn Nalu>>
 }
 
-impl NaluList {
+impl H264NaluList {
     pub fn read(rdr: &mut File, len: u64) -> Self {
-        let mut list = NaluList {
+        let mut list = H264NaluList {
             units: vec![]
         };
         let mut read_len: u64 = 0;
@@ -24,10 +24,39 @@ impl NaluList {
         list
     }
 
-    pub fn write(&self, wtr: &mut dyn Write) {
+    pub fn write(&self, wtr: &mut dyn Write) -> Vec<u32>{
+        let mut sample_offsets: Vec<u32> = vec![];
+        let mut offset: u32 = 0;
+        let mut size: u32 = 0;
         for unit in &self.units {
-            unit.write(wtr, self);
+            // remove SEI, SPS, PPS units
+            // if let Some(_) = unit.as_any().downcast_ref::<SeiNalu>() {
+            //     continue;
+            // } else if let Some(_) = unit.as_any().downcast_ref::<SpsNalu>() {
+            //     continue;
+            // } else if let Some(_) = unit.as_any().downcast_ref::<PpsNalu>() {
+            //     continue;
+            // }
+
+            let bytes = unit.to_bytes(self);
+            wtr.write_u32::<BigEndian>(u32::try_from(bytes.len()).unwrap()).unwrap();   
+            wtr.write_all(&bytes).unwrap();
+
+            if let Some(_) = unit.as_any().downcast_ref::<DelimNalu>() {
+                size += 4 + u32::try_from(bytes.len()).unwrap();    // not added to offset until next sample
+            } else if let Some(_) = unit.as_any().downcast_ref::<IdrNalu>() {
+                sample_offsets.push(offset);
+                offset = size + 4 + u32::try_from(bytes.len()).unwrap();  // offset for next sample, count earlier delim nalu
+                size = 0;
+            } else if let Some(_) = unit.as_any().downcast_ref::<NonIdrNalu>() {
+                sample_offsets.push(offset);
+                offset = size + 4 + u32::try_from(bytes.len()).unwrap();  // offset for next sample, count earlier delim nalu
+                size = 0;
+            } else {
+                offset += 4 + u32::try_from(bytes.len()).unwrap();
+            }
         }
+        sample_offsets
     }
 
     fn read_nalu(&mut self, rdr: &mut File) -> u32 {
@@ -39,51 +68,38 @@ impl NaluList {
         match nal_unit_type {
             1 => {
                 let unit = NonIdrNalu::read(rdr, payload_size, header, self).unwrap();
-                let payload_size = unit.payload_size;
                 self.units.push(Box::new(unit));
-                payload_size
             },
             5 => {
                 let unit = IdrNalu::read(rdr, payload_size, self).unwrap();
-                let payload_size = unit.payload_size;
                 self.units.push(Box::new(unit));
-                payload_size
             },
             6 => {
                 let unit = SeiNalu::read(rdr, payload_size).unwrap();
-                let payload_size = unit.payload_size;
                 self.units.push(Box::new(unit));
-                payload_size
             },
             7 => {
                 let unit = SpsNalu::read(rdr, payload_size).unwrap();
-                let payload_size = unit.payload_size;
                 self.units.push(Box::new(unit));
-                payload_size
             },
             8 => {
                 let unit = PpsNalu::read(rdr, payload_size).unwrap();
-                let payload_size = unit.payload_size;
                 self.units.push(Box::new(unit));
-                payload_size
             },
             9 => {
                 let unit = DelimNalu::read(rdr, payload_size).unwrap();
-                let payload_size = unit.payload_size;
                 self.units.push(Box::new(unit));
-                payload_size
             },
             _ => {
                 let unit = UnknownNalu::read(rdr, payload_size, nal_unit_type).unwrap();
-                let payload_size = unit.payload_size;
                 self.units.push(Box::new(unit));
-                payload_size
             }
         }
+        payload_size
     }
 }
 
-impl SpsPpsProvider for NaluList {
+impl SpsPpsProvider for H264NaluList {
     fn get_sps(&self, id: u64) -> Option<&SpsNalu> {
         for unit in &self.units {
             let any_unit = unit.as_any();

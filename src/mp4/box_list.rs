@@ -2,7 +2,7 @@ use std::fs::File;
 
 use byteorder::{BigEndian, ReadBytesExt};
 
-use super::{atom::Atom, avc1_box::Avc1Box, avcc_box::AvccBox, four_cc::FourCC, ftyp_box, mdat_box, mdia_box::MdiaBox, minf_box::MinfBox, moov_box, mvhd_box, stbl_box::StblBox, stsd_box::StsdBox, trak_box::TrakBox, unknown_box};
+use super::{atom::Atom, avc1_box::Avc1Box, avcc_box::AvccBox, four_cc::FourCC, ftyp_box, mdat_box, mdia_box::MdiaBox, minf_box::MinfBox, moov_box, mvhd_box, stbl_box::StblBox, stsd_box::StsdBox, stsz_box::StszBox, trak_box::TrakBox, unknown_box};
 
 pub struct BoxList {
     pub boxes: Vec<Box<dyn Atom>>
@@ -30,6 +30,14 @@ impl BoxList {
         }
     }
 
+    pub fn get_size(&self) -> u64 {
+        let mut total = 0;
+        for b in &self.boxes {
+            total += b.get_payload_size() + 8
+        }
+        total
+    }
+
     fn read_atom(rdr: &mut File) -> Option<Box<dyn Atom>> {
         let size_u32 = rdr.read_u32::<BigEndian>();
         let size: u64 = match size_u32 {
@@ -55,6 +63,7 @@ impl BoxList {
             "stsd" => Some(Box::new(StsdBox::read(rdr, payload_size).unwrap())),
             "avc1" => Some(Box::new(Avc1Box::read(rdr, payload_size).unwrap())),
             "avcC" => Some(Box::new(AvccBox::read(rdr, payload_size).unwrap())),
+            "stsz" => Some(Box::new(StszBox::read(rdr, payload_size).unwrap())),
             _ => Some(Box::new(unknown_box::UnknownBox::read(rdr, payload_size, boxtype).unwrap()))
         }
     }

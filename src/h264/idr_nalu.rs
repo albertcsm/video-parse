@@ -29,17 +29,13 @@ impl IdrNalu {
 }
 
 impl Nalu for IdrNalu {
-    fn get_payload_size(&self) -> u32 {
-        self.payload_size
-    }
-    
     fn write(&self, wtr: &mut dyn Write, sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         self.slice_header.write(&mut descriptor_writer, sps_pps_provider);
         
         descriptor_writer.append_u(self.residue.0, self.residue.1.into());
         descriptor_writer.append_all(&self.remaining);
-        descriptor_writer.write_with_size_and_header(0x65);
+        descriptor_writer.write_with_header(0x65);
     }
 
     fn as_any(&self) -> &dyn Any {

@@ -2,18 +2,16 @@ use std::{any::Any, fmt, fs::File, io::{self, Cursor, Write}};
 
 use byteorder::{BigEndian, WriteBytesExt};
 
-use crate::h264::nalu_list::NaluList;
-
-use super::atom::Atom;
+use super::{atom::Atom, h264_nalu_list::H264NaluList};
 
 pub struct MdatBox {
-    pub nalu_list: NaluList,
+    pub nalu_list: H264NaluList,
     pub payload_size: u64
 }
 
 impl MdatBox {
     pub fn read(rdr: &mut File, len: u64) -> io::Result<Self> {
-        let nalu_list = NaluList::read(rdr, len);
+        let nalu_list = H264NaluList::read(rdr, len);
         Ok(MdatBox {
             nalu_list,
             payload_size: len

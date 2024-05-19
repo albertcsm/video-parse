@@ -12,9 +12,9 @@ pub struct AvccBox {
 
 impl AvccBox {
     pub fn read(rdr: &mut (impl Read + Seek), len: u64) -> io::Result<Self> {
-        let avc_decoder_configuration_record = AvcDecoderConfigurationRecord::read(rdr);
+        let (avc_decoder_configuration_record, read_size) = AvcDecoderConfigurationRecord::read(rdr);
 
-        let mut remaining = vec![0u8; (len - avc_decoder_configuration_record.size()).try_into().unwrap()];
+        let mut remaining = vec![0u8; (len - u64::from(read_size)).try_into().unwrap()];
         rdr.read_exact(&mut remaining).unwrap();
 
         Ok(AvccBox {
@@ -27,14 +27,16 @@ impl AvccBox {
 
 impl Atom for AvccBox {
     fn get_payload_size(&self) -> u64 {
-        self.payload_size
+        let bytes = self.avc_decoder_configuration_record.to_bytes();
+        (bytes.len() + self.remaining.len()).try_into().unwrap()
     }
 
     fn write(&self, wtr: &mut File) {
-        let total_size: usize = 8 + usize::try_from(self.avc_decoder_configuration_record.size()).unwrap() + self.remaining.len();
+        let bytes = self.avc_decoder_configuration_record.to_bytes();
+        let total_size: usize = 8 + bytes.len() + self.remaining.len();
         wtr.write_u32::<BigEndian>(total_size.try_into().unwrap()).unwrap();
         wtr.write_all(b"avcC").unwrap();
-        self.avc_decoder_configuration_record.write(wtr);
+        wtr.write_all(&bytes).unwrap();
         wtr.write_all(&self.remaining).unwrap();
     }
 

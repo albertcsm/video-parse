@@ -24,14 +24,10 @@ impl UnknownNalu {
 }
 
 impl Nalu for UnknownNalu {
-    fn get_payload_size(&self) -> u32 {
-        self.payload_size
-    }
-
     fn write(&self, wtr: &mut dyn Write, _sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_all(&self.remaining);
-        descriptor_writer.write_with_size_and_header(self.nal_unit_type);
+        descriptor_writer.write_with_header(self.nal_unit_type);
     }
 
     fn as_any(&self) -> &dyn Any {

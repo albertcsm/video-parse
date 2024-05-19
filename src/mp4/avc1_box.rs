@@ -59,7 +59,7 @@ impl Avc1Box {
 
 impl Atom for Avc1Box {
     fn get_payload_size(&self) -> u64 {
-        self.payload_size
+        78 + self.box_list.get_size()
     }
 
     fn write(&self, wtr: &mut File) {

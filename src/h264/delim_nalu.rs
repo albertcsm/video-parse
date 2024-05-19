@@ -4,7 +4,6 @@ use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWr
 
 pub struct DelimNalu {
     remaining: Vec<u8>,
-    pub payload_size: u32
 }
 
 impl DelimNalu {
@@ -15,21 +14,16 @@ impl DelimNalu {
         rdr.read_exact(&mut remaining).unwrap();
 
         Ok(DelimNalu {
-            remaining,
-            payload_size: len
+            remaining
         })
     }
 }
 
 impl Nalu for DelimNalu {
-    fn get_payload_size(&self) -> u32 {
-        self.payload_size
-    }
-
     fn write(&self, wtr: &mut dyn Write, _sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_all(&self.remaining);
-        descriptor_writer.write_with_size_and_header(0x09);
+        descriptor_writer.write_with_header(0x09);
     }
 
     fn as_any(&self) -> &dyn Any {

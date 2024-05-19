@@ -10,6 +10,5 @@ pub mod idr_nalu;
 pub mod non_idr_nalu;
 pub mod delim_nalu;
 pub mod unknown_nalu;
-pub mod nalu_list;
 mod descriptor_reader;
 mod descriptor_writer;

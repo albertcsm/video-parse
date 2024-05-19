@@ -1,3 +1,5 @@
+use std::fmt;
+
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, hrd_parameters::HrdParameters};
 
 #[derive(Debug, Clone)]
@@ -218,5 +220,19 @@ impl VuiParameters {
             descriptor_writer.append_ue_v(self.max_num_reorder_frames);
             descriptor_writer.append_ue_v(self.max_dec_frame_buffering)
         }
+    }
+}
+
+impl fmt::Display for VuiParameters {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let num_units_in_tick = match self.num_units_in_tick {
+            Some(v) => v.to_string(),
+            None => String::from("n/a")
+        };
+        let time_scale = match self.time_scale {
+            Some(v) => v.to_string(),
+            None => String::from("n/a")
+        };
+        write!(f, "(num_units_in_tick={}, time_scale={})", num_units_in_tick, time_scale)
     }
 }

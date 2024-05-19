@@ -1,4 +1,4 @@
-use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
+use std::{any::Any, fmt, io::{self, Read, Write}};
 
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, sps_pps_provider::SpsPpsProvider, vui_parameters::VuiParameters};
 
@@ -39,7 +39,7 @@ pub struct SpsNalu {
 }
 
 impl SpsNalu {
-    pub fn read(rdr: &mut (impl Read + Seek), len: u32) -> io::Result<Self> {
+    pub fn read(rdr: &mut impl Read, len: u32) -> io::Result<Self> {
         let mut descriptor_reader = DescriptorReader::new(rdr);
         let profile_idc = descriptor_reader.read_u8();
         let constraint_set0_flag = descriptor_reader.read_u1();
@@ -151,10 +151,6 @@ impl SpsNalu {
 }
 
 impl Nalu for SpsNalu {
-    fn get_payload_size(&self) -> u32 {
-        self.payload_size
-    }
-
     fn write(&self, wtr: &mut dyn Write, _sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         descriptor_writer.append_u8(self.profile_idc);
@@ -217,7 +213,7 @@ impl Nalu for SpsNalu {
         }
 
         descriptor_writer.append_rbsp_trailing_bits();
-        descriptor_writer.write_with_size_and_header(0x67);
+        descriptor_writer.write_with_header(0x67);
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -235,21 +231,7 @@ impl fmt::Display for SpsNalu {
             Some(vui) => vui.to_string(),
             None => "n/a".to_owned(),
         };
-        write!(f, "[SPS(profile_idc={}, level_idc={}, seq_parameter_set_id={}, chroma_format_idc={}, separate_colour_plane_flag={}, pic_width_in_mbs_minus1={}, pic_height_in_map_units_minus1={}, vui_parameters={})]", 
-            self.profile_idc, self.level_idc, self.seq_parameter_set_id, self.chroma_format_idc, self.separate_colour_plane_flag, self.pic_width_in_mbs_minus1, self.pic_height_in_map_units_minus1, vui_parameters)
-    }
-}
-
-impl fmt::Display for VuiParameters {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let num_units_in_tick = match self.num_units_in_tick {
-            Some(v) => v.to_string(),
-            None => String::from("n/a")
-        };
-        let time_scale = match self.time_scale {
-            Some(v) => v.to_string(),
-            None => String::from("n/a")
-        };
-        write!(f, "(num_units_in_tick={}, time_scale={})", num_units_in_tick, time_scale)
+        write!(f, "[SPS(profile_idc={}, level_idc={}, seq_parameter_set_id={}, pic_order_cnt_type={}, pic_width_in_mbs_minus1={}, pic_height_in_map_units_minus1={}, vui_parameters={})]", 
+            self.profile_idc, self.level_idc, self.seq_parameter_set_id, self.pic_order_cnt_type, self.pic_width_in_mbs_minus1, self.pic_height_in_map_units_minus1, vui_parameters)
     }
 }

@@ -74,7 +74,7 @@ fn main() {
                 if let Some(sps) = nalu.as_any_mut().downcast_mut::<SpsNalu>() {
                     println!("SPS({:#?}): ", sps);
 
-                    sps.vui_parameters.as_mut().unwrap().max_dec_frame_buffering = 4;
+                    // sps.vui_parameters.as_mut().unwrap().max_dec_frame_buffering = 4;
                 } else if let Some(idr) = nalu.as_any_mut().downcast_mut::<IdrNalu>() {
                     let pps = pps_map.get(&idr.slice_header.pic_parameter_set_id).unwrap();
                     let sps = sps_map.get(&pps.seq_parameter_set_id).unwrap();
@@ -87,7 +87,7 @@ fn main() {
                         idr.slice_header.frame_num, frame_num,
                         idr.slice_header.pic_order_cnt_lsb, pic_order_cnt);
 
-                    idr.slice_header.frame_num = frame_num;
+                    // idr.slice_header.frame_num = frame_num;
                 } else if let Some(non_idr) = nalu.as_any_mut().downcast_mut::<NonIdrNalu>() {
                     pic_order_cnt = get_pic_order_cnt(non_idr.slice_header.pic_order_cnt_lsb.try_into().unwrap(), pic_order_cnt, pic_order_cnt_bits.unwrap());
                     if non_idr.slice_header.slice_type == 5 {
@@ -99,7 +99,7 @@ fn main() {
                         non_idr.slice_header.frame_num, frame_num,
                         non_idr.slice_header.pic_order_cnt_lsb, pic_order_cnt);
 
-                    non_idr.slice_header.frame_num = frame_num;
+                    // non_idr.slice_header.frame_num = frame_num;
                 }
             }
         }

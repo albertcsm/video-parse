@@ -2,7 +2,7 @@ use std::{any::Any, fmt, io::{Cursor, Write}};
 
 use super::sps_pps_provider::SpsPpsProvider;
 
-pub trait Nalu: fmt::Display {
+pub trait Nalu: fmt::Debug {
     fn write(&self, wtr: &mut dyn Write, sps_pps_provider: &dyn SpsPpsProvider);
     fn to_bytes(&self, sps_pps_provider: &dyn SpsPpsProvider) -> Vec<u8> {
         let mut cursor = Cursor::new(Vec::new());

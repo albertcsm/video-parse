@@ -40,9 +40,10 @@ impl Atom for TrakBox {
     }
 }
 
-impl fmt::Display for TrakBox {
+impl fmt::Debug for TrakBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let children = self.box_list.boxes.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
-        write!(f, "trak({})", children)
+        f.debug_struct("TrakBox")
+            .field("box_list", &self.box_list)
+            .finish()
     }
 }

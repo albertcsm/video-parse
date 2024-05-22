@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::{fmt, fs::File};
 
 use byteorder::{BigEndian, ReadBytesExt};
 
@@ -66,5 +66,13 @@ impl BoxList {
             "stsz" => Some(Box::new(StszBox::read(rdr, payload_size).unwrap())),
             _ => Some(Box::new(unknown_box::UnknownBox::read(rdr, payload_size, boxtype).unwrap()))
         }
+    }
+}
+
+impl fmt::Debug for BoxList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list()
+            .entries(&self.boxes)
+            .finish()
     }
 }

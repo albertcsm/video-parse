@@ -1,3 +1,5 @@
+use std::fmt;
+
 use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, sps_pps_provider::SpsPpsProvider};
 
 pub struct SliceHeader {
@@ -82,5 +84,29 @@ impl SliceHeader {
             let pic_order_cnt_lsb_bits = sps.log2_max_pic_order_cnt_lsb_minus4 + 4;
             descriptor_writer.append_u(u8::try_from(pic_order_cnt_lsb_bits).unwrap(), self.pic_order_cnt_lsb);
         }
+    }
+}
+
+impl fmt::Debug for SliceHeader {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // let slice_type = match self.slice_header.slice_type {
+        //     2 | 7 => "I",
+        //     0 | 5 => "P",
+        //     1 | 6 => "B",
+        //     _ => "?"
+        // };
+
+        f.debug_struct("SliceHeader")
+            .field("idr_pic_flag", &self.slice_type)
+            .field("first_mb_in_slice", &self.first_mb_in_slice)
+            .field("slice_type", &self.slice_type)
+            .field("pic_parameter_set_id", &self.pic_parameter_set_id)
+            .field("colour_plane_id", &self.colour_plane_id)
+            .field("frame_num", &self.frame_num)
+            .field("field_pic_flag", &self.field_pic_flag)
+            .field("bottom_field_flag", &self.bottom_field_flag)
+            .field("idr_pic_id", &self.idr_pic_id)
+            .field("pic_order_cnt_lsb", &self.pic_order_cnt_lsb)
+            .finish()
     }
 }

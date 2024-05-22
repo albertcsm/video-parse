@@ -68,8 +68,12 @@ impl Atom for StszBox {
     }
 }
 
-impl fmt::Display for StszBox {
+impl fmt::Debug for StszBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "stsz(sample_size={}, sample_count={})", self.sample_size, self.sample_count)
+        f.debug_struct("StszBox")
+            .field("sample_size", &self.sample_size)
+            .field("sample_count", &self.sample_count)
+            .field("entry_sizes", &self.entry_sizes)
+            .finish()
     }
 }

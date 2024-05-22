@@ -99,9 +99,15 @@ impl Atom for Avc1Box {
     }
 }
 
-impl fmt::Display for Avc1Box {
+impl fmt::Debug for Avc1Box {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let children = self.box_list.boxes.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
-        write!(f, "avc1(width={}, height={}, {})", self.width, self.height, children)
+        f.debug_struct("Avc1Box")
+            .field("data_reference_index", &self.data_reference_index)
+            .field("visual_sample_entry_reserved", &self.visual_sample_entry_reserved)
+            .field("width", &self.width)
+            .field("height", &self.height)
+            .field("compressorname", &self.compressorname)
+            .field("box_list", &self.box_list)
+            .finish()
     }
 }

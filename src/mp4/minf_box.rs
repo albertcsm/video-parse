@@ -40,9 +40,10 @@ impl Atom for MinfBox {
     }
 }
 
-impl fmt::Display for MinfBox {
+impl fmt::Debug for MinfBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let children = self.box_list.boxes.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
-        write!(f, "minf({})", children)
+        f.debug_struct("MinfBox")
+        .field("box_list", &self.box_list)
+        .finish()
     }
 }

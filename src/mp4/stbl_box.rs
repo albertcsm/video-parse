@@ -40,9 +40,10 @@ impl Atom for StblBox {
     }
 }
 
-impl fmt::Display for StblBox {
+impl fmt::Debug for StblBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let children = self.box_list.boxes.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
-        write!(f, "sbtl({})", children)
+        f.debug_struct("StblBox")
+        .field("box_list", &self.box_list)
+        .finish()
     }
 }

@@ -47,8 +47,10 @@ impl Nalu for IdrNalu {
     }
 }
 
-impl fmt::Display for IdrNalu {
+impl fmt::Debug for IdrNalu {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[IDR(slice_type={}, frame_num={}, pic_order_cnt_lsb={})]", self.slice_header.slice_type, self.slice_header.frame_num, self.slice_header.pic_order_cnt_lsb)
+        f.debug_struct("IdrNalu")
+            .field("slice_header", &self.slice_header)
+            .finish()
     }
 }

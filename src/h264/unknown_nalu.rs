@@ -39,8 +39,10 @@ impl Nalu for UnknownNalu {
     }
 }
 
-impl fmt::Display for UnknownNalu {
+impl fmt::Debug for UnknownNalu {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[NALU {}]", self.nal_unit_type)
+        f.debug_struct("UnknownNalu")
+            .field("nal_unit_type", &self.nal_unit_type)
+            .finish()
     }
 }

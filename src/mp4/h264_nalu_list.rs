@@ -1,4 +1,4 @@
-use std::{fs::File, io::Write};
+use std::{fmt, fs::File, io::Write};
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
@@ -128,5 +128,13 @@ impl SpsPpsProvider for H264NaluList {
             }
         }
         None
+    }
+}
+
+impl fmt::Debug for H264NaluList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list()
+            .entries(&self.units)
+            .finish()
     }
 }

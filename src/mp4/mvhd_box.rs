@@ -88,8 +88,13 @@ impl Atom for MvhdBox {
     }
 }
 
-impl fmt::Display for MvhdBox {
+impl fmt::Debug for MvhdBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "mvhd(timescale={}, duration={})", self.timescale, self.duration)
+        f.debug_struct("MvhdBox")
+        .field("creation_time", &self.creation_time)
+        .field("modification_time", &self.modification_time)
+        .field("timescale", &self.timescale)
+        .field("duration", &self.duration)
+        .finish()
     }
 }

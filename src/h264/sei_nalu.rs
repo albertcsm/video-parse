@@ -37,8 +37,9 @@ impl Nalu for SeiNalu {
     }
 }
 
-impl fmt::Display for SeiNalu {
+impl fmt::Debug for SeiNalu {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[SEI]")
+        f.debug_struct("SeiNalu")
+            .finish()
     }
 }

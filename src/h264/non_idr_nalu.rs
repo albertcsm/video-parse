@@ -49,14 +49,11 @@ impl Nalu for NonIdrNalu {
     }
 }
 
-impl fmt::Display for NonIdrNalu {
+impl fmt::Debug for NonIdrNalu {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let slice_type = match self.slice_header.slice_type {
-            2 | 7 => "I",
-            0 | 5 => "P",
-            1 | 6 => "B",
-            _ => "?"
-        };
-        write!(f, "[NON-IDR(slice_type={}({}), frame_num={}, pic_order_cnt_lsb={})]", self.slice_header.slice_type, slice_type, self.slice_header.frame_num, self.slice_header.pic_order_cnt_lsb)
+        f.debug_struct("NonIdrNalu")
+            .field("header", &self.header)
+            .field("slice_header", &self.slice_header)
+            .finish()
     }
 }

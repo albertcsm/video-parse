@@ -44,9 +44,10 @@ impl Atom for MdatBox {
     }
 }
 
-impl fmt::Display for MdatBox {
+impl fmt::Debug for MdatBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let nalus = self.nalu_list.units.iter().map(|x| x.to_string()).collect::<Vec<_>>().join("\n  ");
-        write!(f, "mdat({})", nalus)
+        f.debug_struct("MdatBox")
+        .field("nalu_list", &self.nalu_list)
+        .finish()
     }
 }

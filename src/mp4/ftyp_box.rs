@@ -61,3 +61,13 @@ impl fmt::Display for FtypBox {
         write!(f, "ftyp(major_brand={}, minor_brand={}, compatible_brands={})", self.major_brand, self.minor_brand, compatible_brands)
     }
 }
+
+impl fmt::Debug for FtypBox {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FtypBox")
+            .field("minor_brand", &self.minor_brand)
+            .field("major_brand", &self.major_brand)
+            .field("compatible_brands", &self.compatible_brands)
+            .finish()
+    }
+}

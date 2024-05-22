@@ -49,8 +49,10 @@ impl Atom for AvccBox {
     }
 }
 
-impl fmt::Display for AvccBox {
+impl fmt::Debug for AvccBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "avcC({})", self.avc_decoder_configuration_record)
+        f.debug_struct("AvccBox")
+            .field("avc_decoder_configuration_record", &self.avc_decoder_configuration_record)
+            .finish()
     }
 }

@@ -44,8 +44,10 @@ impl Atom for UnknownBox {
     }
 }
 
-impl fmt::Display for UnknownBox {
+impl fmt::Debug for UnknownBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}(unknown box)", self.boxtype)
+        f.debug_struct("UnknownBox")
+            .field("boxtype", &self.boxtype)
+            .finish()
     }
 }

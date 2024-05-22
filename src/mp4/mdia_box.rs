@@ -40,9 +40,10 @@ impl Atom for MdiaBox {
     }
 }
 
-impl fmt::Display for MdiaBox {
+impl fmt::Debug for MdiaBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let children = self.box_list.boxes.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
-        write!(f, "mdia({})", children)
+        f.debug_struct("MdiaBox")
+        .field("box_list", &self.box_list)
+        .finish()
     }
 }

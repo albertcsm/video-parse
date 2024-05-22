@@ -105,10 +105,16 @@ impl SpsPpsProvider for AvcDecoderConfigurationRecord {
     }
 }
 
-impl fmt::Display for AvcDecoderConfigurationRecord {
+impl fmt::Debug for AvcDecoderConfigurationRecord {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let sps = self.sequence_parameter_set_nal_units.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
-        let pps = self.picture_parameter_set_nal_units.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
-        write!(f, "sps: [{}], pps: [{}]", sps, pps)
+        f.debug_struct("AvccBox")
+            .field("configuration_version", &self.configuration_version)
+            .field("avc_profile_indication", &self.avc_profile_indication)
+            .field("profile_compatibility", &self.profile_compatibility)
+            .field("avc_level_indication", &self.avc_level_indication)
+            .field("length_size_minus_one", &self.length_size_minus_one)
+            .field("sequence_parameter_set_nal_units", &"...")
+            .field("picture_parameter_set_nal_units", &"...")
+            .finish()
     }
 }

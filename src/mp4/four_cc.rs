@@ -26,3 +26,10 @@ impl fmt::Display for FourCC {
         write!(f, "{:}", fourcc)
     }
 }
+
+impl fmt::Debug for FourCC {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let fourcc = std::str::from_utf8(&self.data).unwrap();
+        write!(f, "{:}", fourcc)
+    }
+}

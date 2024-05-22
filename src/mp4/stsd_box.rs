@@ -52,9 +52,10 @@ impl Atom for StsdBox {
     }
 }
 
-impl fmt::Display for StsdBox {
+impl fmt::Debug for StsdBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let children = self.box_list.boxes.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
-        write!(f, "stsd({})", children)
+        f.debug_struct("StsdBox")
+        .field("box_list", &self.box_list)
+        .finish()
     }
 }

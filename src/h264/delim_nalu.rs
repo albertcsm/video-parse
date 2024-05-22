@@ -35,8 +35,9 @@ impl Nalu for DelimNalu {
     }
 }
 
-impl fmt::Display for DelimNalu {
+impl fmt::Debug for DelimNalu {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[DELIM]")
+        f.debug_struct("DelimNalu")
+            .finish()
     }
 }

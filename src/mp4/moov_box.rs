@@ -41,9 +41,10 @@ impl Atom for MoovBox {
     }
 }
 
-impl fmt::Display for MoovBox {
+impl fmt::Debug for MoovBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let children = self.box_list.boxes.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
-        write!(f, "moov({})", children)
+        f.debug_struct("MoovBox")
+        .field("box_list", &self.box_list)
+        .finish()
     }
 }

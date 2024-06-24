@@ -1,29 +1,24 @@
 use std::{any::Any, fmt, io::{self, Read, Seek, Write}};
 
-use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, slice_header::SliceHeader, sps_pps_provider::SpsPpsProvider};
+use super::{descriptor_reader::DescriptorReader, descriptor_writer::DescriptorWriter, nalu::Nalu, opaque_data::OpaqueData, slice_header::SliceHeader, sps_pps_provider::SpsPpsProvider};
 
 pub struct NonIdrNalu {
     pub header: u8,
     pub slice_header: SliceHeader,
-    residue: (u8, u8),
-    remaining: Vec<u8>,
+    remaining: OpaqueData,
     pub payload_size: u32
 }
 
 impl NonIdrNalu {
     pub fn read(rdr: &mut (impl Read + Seek), len: u32, header: u8, sps_pps_provider: &impl SpsPpsProvider) -> io::Result<Self> {
-        let mut descriptor_reader = DescriptorReader::new(rdr);
+        let mut descriptor_reader = DescriptorReader::new(rdr, len);
         let slice_header = SliceHeader::read(&mut descriptor_reader, false, sps_pps_provider);
-
-        let residue = descriptor_reader.get_residue();
-        let remaining_len: u64 = u64::from(len) - descriptor_reader.get_num_read_bytes();
-        let mut remaining = vec![0u8; remaining_len.try_into().unwrap()];
-        rdr.read_exact(&mut remaining).unwrap();
+        let remaining = descriptor_reader.read_to_end();
+        descriptor_reader.read_rbsp_trailing_bits();
 
         Ok(NonIdrNalu {
             header,
             slice_header,
-            residue,
             remaining,
             payload_size: len
         })
@@ -34,9 +29,8 @@ impl Nalu for NonIdrNalu {
     fn write(&self, wtr: &mut dyn Write, sps_pps_provider: &dyn SpsPpsProvider) {
         let mut descriptor_writer = DescriptorWriter::new(wtr);
         self.slice_header.write(&mut descriptor_writer, sps_pps_provider);
-        
-        descriptor_writer.append_u(self.residue.0, self.residue.1.into());
         descriptor_writer.append_all(&self.remaining);
+        descriptor_writer.append_rbsp_trailing_bits();
         descriptor_writer.write_with_header(self.header);
     }
     

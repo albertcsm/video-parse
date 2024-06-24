@@ -2,6 +2,8 @@ use std::{cmp, io::Write};
 
 use byteorder::WriteBytesExt;
 
+use super::opaque_data::OpaqueData;
+
 pub struct DescriptorWriter<'a> {
     wtr: &'a mut (dyn Write),
     buffer: Vec<u8>,
@@ -69,11 +71,38 @@ impl<'a> DescriptorWriter<'a> {
         self.append_u(bits, value + 1);
     }
 
-    pub fn append_all(&mut self, values: &Vec<u8>) {
-        if self.residue_bits != 0 {
-            panic!("There are residue bits in write buffer, not ready to append_all");
+    pub fn append_se_v(&mut self, value: i64) {
+        //  0 - > 1
+        //  1 -> 010
+        // -1 -> 011
+        //  2 -> 00100
+        // -2 -> 00101
+        if value != 0 {
+            let sign: bool;
+            let magnitude: u64;
+            if value < 0 {
+                sign = true;
+                magnitude = u64::try_from(-value).unwrap();
+            } else {
+                sign = false;
+                magnitude = u64::try_from(value).unwrap();
+            }
+            let bits = DescriptorWriter::count_bits(magnitude);
+            self.append_u(bits, 0);
+            self.append_u(bits, magnitude);
+            self.append_u1(sign);
+        } else {
+            self.append_u1(true);
         }
-        self.buffer.write_all(&values).unwrap();
+    }
+
+    pub fn append_all(&mut self, opaque_data: &OpaqueData) {
+        for i in 0..opaque_data.bytes.len() {
+            self.append_u8(opaque_data.bytes[i]);
+        }
+        if opaque_data.residue_bits > 0 {
+            self.append_u(opaque_data.residue_bits, opaque_data.residue_value.into())
+        }
     }
 
     pub fn append_rbsp_trailing_bits(&mut self) {

@@ -40,7 +40,7 @@ pub struct SpsNalu {
 
 impl SpsNalu {
     pub fn read(rdr: &mut impl Read, len: u32) -> io::Result<Self> {
-        let mut descriptor_reader = DescriptorReader::new(rdr);
+        let mut descriptor_reader = DescriptorReader::new(rdr, len);
         let profile_idc = descriptor_reader.read_u8();
         let constraint_set0_flag = descriptor_reader.read_u1();
         let constraint_set1_flag = descriptor_reader.read_u1();
